@@ -53,7 +53,7 @@ def main(args):
         exit()
     
     #Util.showImages(solver.dataloader)
-    solver.train()
+    solver.train(not args.noresume)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -62,7 +62,7 @@ if __name__ == '__main__':
     parser.add_argument('--result_dir', type=str, default='results')
     parser.add_argument('--weight_dir', type=str, default='weights')
     parser.add_argument('--lr', type=float, default=0.00001)
-    parser.add_argument('--num_epoch', type=int, default=1000)
+    parser.add_argument('--num_epoch', type=int, default=100)
     parser.add_argument('--batch_size', type=int, default=3)
     parser.add_argument('--lambda_cycle', type=float, default=10)
     parser.add_argument('--lambda_identity', type=float, default=5)

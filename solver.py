@@ -61,7 +61,6 @@ class Solver:
         self.optimizer_D_B = optim.Adam(self.netD_B.parameters(), lr=self.lr * 4, betas=(0, 0.9))
         
         self.last_epoch = 0
-        self.last_iters = 0
         
     def weights_init(self, module):
         if type(module) == nn.Conv2d or type(module) == nn.ConvTranspose2d or type(module) == nn.Linear:
@@ -222,10 +221,6 @@ class Solver:
             self.epoch_loss_D = 0.0
             
             for i, (data1, _) in enumerate(tqdm(self.dataloader)):
-                if i < self.last_iters:
-                    continue
-                self.last_iters = i
-                
                 data2 = []
                 for d in data1:
                     data2.append(Util.toLineDrawing(d).numpy())
