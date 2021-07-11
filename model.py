@@ -31,6 +31,32 @@ class FReLU(nn.Module):
         tx = self.bn(self.funnel_condition(x))
         out = torch.max(x, tx)
         return out
+    
+class SelfAttention(nn.Module):
+    def __init__(self, input_nc):
+        super().__init__()
+        
+        # Pointwise Convolution
+        self.query_conv = nn.Conv2d(input_nc, input_nc // 8, kernel_size=1)
+        self.key_conv = nn.Conv2d(input_nc, input_nc // 8, kernel_size=1)
+        self.value_conv = nn.Conv2d(input_nc, input_nc, kernel_size=1)
+        
+        self.softmax = nn.Softmax(dim=-2)
+        self.gamma = nn.Parameter(torch.zeros(1))
+        
+    def forward(self, x):
+        proj_query = self.query_conv(x).view(x.shape[0], -1, x.shape[2] * x.shape[3]).permute(0, 2, 1)
+        proj_key = self.key_conv(x).view(x.shape[0], -1, x.shape[2] * x.shape[3])
+        s = torch.bmm(proj_query, proj_key) # バッチ毎の行列乗算
+        attention_map_T = self.softmax(s)
+        
+        proj_value = self.value_conv(x).view(x.shape[0], -1, x.shape[2] * x.shape[3])
+        o = torch.bmm(proj_value, attention_map_T)
+        
+        o = o.view(x.shape[0], x.shape[1], x.shape[2], x.shape[3])
+        out = x + self.gamma * o
+        
+        return out#, attention_map_T.permute(0, 2, 1)
 
 class ResidualSEBlock(nn.Module):
     def __init__(self, in_features, reduction=16):
@@ -89,6 +115,8 @@ class Generator(nn.Module):
         # Residual blocks
         for _ in range(n_residual_blocks):
             model += [ ResidualSEBlock(in_features) ]
+            
+        model += [SelfAttention(in_features)]
 
         # Upsampling
         out_features = in_features // 2
@@ -133,6 +161,8 @@ class Discriminator(nn.Module):
             nn.InstanceNorm2d(256), 
             nn.LeakyReLU(0.2, inplace=True)
         ]
+        
+        model += [SelfAttention(256)]
 
         model += [
             nn.utils.spectral_norm(nn.Conv2d(256, 512, kernel_size=4, padding=1)),

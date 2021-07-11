@@ -255,10 +255,10 @@ class Solver:
         for i in range(num):
             data1, _ = next(dataloader)
             
-            data2_ = []
-            for d in data2:
-                data2_.append(Util.toLineDrawing(d).numpy())
-            data2 = torch.Tensor(data2_)
+            data2 = []
+            for d in data1:
+                data2.append(Util.toLineDrawing(d).numpy())
+            data2 = torch.Tensor(data2).to(self.device)
                 
             dataA = data1.to(self.device)
             dataB = data2.to(self.device)
