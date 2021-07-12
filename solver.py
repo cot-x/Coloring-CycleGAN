@@ -224,7 +224,7 @@ class Solver:
                 data2 = []
                 for d in data1:
                     data2.append(Util.toLineDrawing(d).numpy())
-                data2 = torch.Tensor(data2).to(self.device)
+                data2 = torch.Tensor(data2)
                     
                 data1 = data1.to(self.device)
                 data2 = data2.to(self.device)
