@@ -1,4 +1,5 @@
 import torch
+from torch.utils.mobile_optimizer import optimize_for_mobile
 
 from model import *
 
@@ -20,10 +21,14 @@ dB.eval()
 example = torch.rand(1, 3, 256, 256)
 
 traced = torch.jit.trace(gA2B, example)
-traced.save('weight_G_A2B.pt')
+traced = optimize_for_mobile(traced)
+traced._save_for_lite_interpreter('modelA2B.ptl')
 traced = torch.jit.trace(gB2A, example)
-traced.save('weight_G_B2A.pt')
+traced = optimize_for_mobile(traced)
+traced._save_for_lite_interpreter('modelB2A.ptl')
 traced = torch.jit.trace(dA, example)
-traced.save('weight_D_A.pt')
+traced = optimize_for_mobile(traced)
+traced._save_for_lite_interpreter('modelDA.ptl')
 traced = torch.jit.trace(dB, example)
-traced.save('weight_D_B.pt')
+traced = optimize_for_mobile(traced)
+traced._save_for_lite_interpreter('modelDB.ptl')
