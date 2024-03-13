@@ -65,11 +65,11 @@ class ResidualSEBlock(nn.Module):
         self.shortcut = nn.Sequential()
         self.residual = nn.Sequential(
             nn.ReflectionPad2d(1),
-            nn.utils.spectral_norm(nn.Conv2d(in_features, in_features, kernel_size=3, stride=1, padding=0)),
+            nn.Conv2d(in_features, in_features, kernel_size=3, stride=1, padding=0),
             nn.InstanceNorm2d(in_features),
             FReLU(in_features),
             nn.ReflectionPad2d(1),
-            nn.utils.spectral_norm(nn.Conv2d(in_features, in_features, kernel_size=3, stride=1, padding=0)),
+            nn.Conv2d(in_features, in_features, kernel_size=3, stride=1, padding=0),
             nn.InstanceNorm2d(in_features)
         )
 
@@ -105,7 +105,7 @@ class Generator(nn.Module):
         out_features = in_features * 2
         for _ in range(2):
             model += [
-                nn.utils.spectral_norm(nn.Conv2d(in_features, out_features, kernel_size=3, stride=2, padding=1)),
+                nn.Conv2d(in_features, out_features, kernel_size=3, stride=2, padding=1),
                 nn.InstanceNorm2d(out_features),
                 FReLU(out_features)
             ]
@@ -122,7 +122,7 @@ class Generator(nn.Module):
         out_features = in_features // 2
         for _ in range(2):
             model += [
-                nn.utils.spectral_norm(nn.ConvTranspose2d(in_features, out_features, kernel_size=3, stride=2, padding=1, output_padding=1)),
+                nn.ConvTranspose2d(in_features, out_features, kernel_size=3, stride=2, padding=1, output_padding=1),
                 nn.InstanceNorm2d(out_features),
                 FReLU(out_features)
             ]
@@ -152,13 +152,11 @@ class Discriminator(nn.Module):
 
         model += [
             nn.utils.spectral_norm(nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1)),
-            nn.InstanceNorm2d(128), 
             nn.LeakyReLU(0.2, inplace=True)
         ]
 
         model += [
             nn.utils.spectral_norm(nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1)),
-            nn.InstanceNorm2d(256), 
             nn.LeakyReLU(0.2, inplace=True)
         ]
         
@@ -166,7 +164,6 @@ class Discriminator(nn.Module):
 
         model += [
             nn.utils.spectral_norm(nn.Conv2d(256, 512, kernel_size=4, padding=1)),
-            nn.InstanceNorm2d(512), 
             nn.LeakyReLU(0.2, inplace=True)
         ]
 
