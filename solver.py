@@ -223,7 +223,7 @@ class Solver:
             for i, (data1, _) in enumerate(tqdm(self.dataloader)):
                 data2 = []
                 for d in data1:
-                    data2.append(Util.toLineDrawing(d).numpy())
+                    data2.append(Util.toLineDrawing(d).tolist())
                 data2 = torch.Tensor(data2)
                     
                 data1 = data1.to(self.device)
@@ -257,7 +257,7 @@ class Solver:
             
             data2 = []
             for d in data1:
-                data2.append(Util.toLineDrawing(d).numpy())
+                data2.append(Util.toLineDrawing(d).tolist())
             data2 = torch.Tensor(data2)
                 
             dataA = data1.to(self.device)
