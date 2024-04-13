@@ -60,7 +60,7 @@ class Util:
         imgs = ImageFolder(folder_path, transform=transforms.Compose([
             transforms.Resize(int(size)),
             transforms.RandomCrop(size),
-            transforms.RandomHorizontalFlip(),
+            #transforms.RandomHorizontalFlip(),
             transforms.ToTensor()
         ]))
         return DataLoader(imgs, batch_size=batch_size, shuffle=True, drop_last=True)
