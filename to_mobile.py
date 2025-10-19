@@ -1,5 +1,6 @@
 import torch
-from torch.utils.mobile_optimizer import optimize_for_mobile
+from executorch.exir import to_edge_transform_and_lower
+from executorch.backends.xnnpack.partition.xnnpack_partitioner import XnnpackPartitioner
 
 from model import *
 
@@ -18,17 +19,36 @@ gB2A.eval()
 dA.eval()
 dB.eval()
 
-example = torch.rand(1, 3, 256, 256)
+example_inputs = (torch.rand(1, 3, 256, 256),)
 
-traced = torch.jit.trace(gA2B, example)
-traced = optimize_for_mobile(traced)
-traced._save_for_lite_interpreter('modelA2B.ptl')
-traced = torch.jit.trace(gB2A, example)
-traced = optimize_for_mobile(traced)
-traced._save_for_lite_interpreter('modelB2A.ptl')
-traced = torch.jit.trace(dA, example)
-traced = optimize_for_mobile(traced)
-traced._save_for_lite_interpreter('modelDA.ptl')
-traced = torch.jit.trace(dB, example)
-traced = optimize_for_mobile(traced)
-traced._save_for_lite_interpreter('modelDB.ptl')
+exported_program = torch.export.export(gA2B, example_inputs)
+program = to_edge_transform_and_lower(
+    exported_program,
+    partitioner=[XnnpackPartitioner()]  # CPU | CoreMLPartitioner() for iOS | QnnPartitioner() for Qualcomm
+).to_executorch()
+with open("modelA2B.pte", "wb") as f:
+    f.write(program.buffer)
+
+exported_program = torch.export.export(gB2A, example_inputs)
+program = to_edge_transform_and_lower(
+    exported_program,
+    partitioner=[XnnpackPartitioner()]  # CPU | CoreMLPartitioner() for iOS | QnnPartitioner() for Qualcomm
+).to_executorch()
+with open("modelB2A.pte", "wb") as f:
+    f.write(program.buffer)
+
+exported_program = torch.export.export(dA, example_inputs)
+program = to_edge_transform_and_lower(
+    exported_program,
+    partitioner=[XnnpackPartitioner()]  # CPU | CoreMLPartitioner() for iOS | QnnPartitioner() for Qualcomm
+).to_executorch()
+with open("modelDA.pte", "wb") as f:
+    f.write(program.buffer)
+
+exported_program = torch.export.export(dB, example_inputs)
+program = to_edge_transform_and_lower(
+    exported_program,
+    partitioner=[XnnpackPartitioner()]  # CPU | CoreMLPartitioner() for iOS | QnnPartitioner() for Qualcomm
+).to_executorch()
+with open("modelDB.pte", "wb") as f:
+    f.write(program.buffer)
